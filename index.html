@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Wekha – Watch Movies</title>
+<style>
+:root{--bg:#fff7f0;--sf:#fff;--tx:#1d1420;--mu:#6d6270;--ac:#e5173f;--bd:#eadfd6;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#120d16;--sf:#1e1724;--tx:#f6eef8;--mu:#a597ab;--ac:#ff3b5c;--bd:#33283b;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#120d16;--sf:#1e1724;--tx:#f6eef8;--mu:#a597ab;--ac:#ff3b5c;--bd:#33283b;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.4}
+.w{max-width:980px;margin:0 auto;padding:16px}
+.logo{font-size:1.5rem;font-weight:800}.logo span{color:var(--ac)}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:9px 14px;background:var(--ac);color:#fff;font-weight:600}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+button.on{background:var(--tx);color:var(--bg)}
+input,select,textarea{width:100%;font:inherit;padding:9px;border-radius:9px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.top{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.top input{max-width:260px}
+.chips{display:flex;gap:8px;overflow-x:auto;margin:14px 0}.chips button{white-space:nowrap}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.card{background:var(--sf);border:1px solid var(--bd);border-radius:14px;overflow:hidden;cursor:pointer}
+.po{height:150px;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
+.po b{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.65);color:#fff;border-radius:20px;padding:3px 10px;font-size:.75rem}
+.in{padding:10px}.in h3{margin:0;font-size:1rem}.in small{color:var(--mu)}
+dialog{border:1px solid var(--bd);border-radius:16px;background:var(--sf);color:var(--tx);width:min(94vw,720px);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.65)}
+.pl{aspect-ratio:16/9;background:#000;border-radius:10px;overflow:hidden}
+.pl video,.pl iframe{width:100%;height:100%;border:0}
+.mu{color:var(--mu);font-size:.9rem}
+label{display:block;font-size:.85rem;margin:10px 0 4px;color:var(--mu)}
+.empty{text-align:center;color:var(--mu);padding:40px 0}
+footer{margin-top:28px;font-size:.8rem;color:var(--mu);text-align:center}
+#adm{display:none;margin-top:20px;padding:16px;border:1px dashed var(--ac);border-radius:14px;background:var(--sf)}
+</style>
+</head>
+<body>
+<div class="w">
+<div class="top"><div class="logo">We<span>kha</span> 🎬</div><input id="q" placeholder="Movie dhundo…"></div>
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+
+<div id="adm">
+<h2 style="margin:0 0 4px">Owner Panel</h2>
+<p class="mu" style="margin-top:0">Yahan movie ki details bharo. Neeche ek line code banegi, use file ki MOVIES list mein paste karo, phir site dobara upload karo.</p>
+<label>Naam</label><input id="a1">
+<label>Genre</label><input id="a2" placeholder="Action, Comedy…">
+<label>Saal</label><input id="a3" value="2026">
+<label>Poster emoji</label><input id="a4" value="🎬">
+<label>Story</label><textarea id="a5" rows="2"></textarea>
+<label>Type</label><select id="a6"><option value="mp4">Video file link (.mp4)</option><option value="yt">YouTube link</option></select>
+<label>Video link</label><input id="a7" placeholder="https://…">
+<div style="margin-top:12px"><button id="gen">Code banao</button></div>
+<label>Ye line MOVIES list mein paste karo</label><textarea id="out" rows="4" readonly></textarea>
+<button class="g" id="cp" style="margin-top:8px">Copy</button>
+</div>
+
+<footer>Sirf wahi movies add karo jinke rights aapke paas hain (aapki apni, public domain ya Creative Commons).</footer>
+</div>
+
+<dialog id="dlg">
+<div class="pl" id="pl"></div>
+<h2 id="pt" style="margin:12px 0 2px"></h2>
+<div class="mu" id="pm"></div>
+<p id="pd"></p>
+<button id="cl">Band karo</button>
+</dialog>
+
+<script>
+/* ===== MOVIES LIST: nayi movie yahan add hoti hai ===== */
+var MOVIES=[
+{t:"Big Buck Bunny",g:"Animation",y:2008,e:"🐰",s:"Ek bade se khargosh ki pyari kahani (Blender Foundation, Creative Commons).",k:"mp4",u:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"},
+{t:"Sintel",g:"Fantasy",y:2010,e:"🐉",s:"Ek ladki aur uske azeez dragon ki talaash (Blender Foundation, Creative Commons).",k:"mp4",u:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/Sintel.mp4"},
+{t:"Elephants Dream",g:"Sci-Fi",y:2006,e:"🐘",s:"Do dost ek ajeeb mashini duniya mein (Blender Foundation, Creative Commons).",k:"mp4",u:"https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4"}
+];
+/* ======================================================= */
+var genre="All",qs="",colors=["#ff6b6b","#4d96ff","#6bcb77","#ffb84d","#b57bee","#ff7eb6"];
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function ytId(u){var m=String(u).match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);return m?m[1]:u}
+function chips(){
+ var gs=["All"];MOVIES.forEach(function(x){if(gs.indexOf(x.g)<0)gs.push(x.g)});
+ document.getElementById("chips").innerHTML=gs.map(function(g){return '<button class="g'+(g===genre?' on':'')+'" data-g="'+esc(g)+'">'+esc(g)+'</button>'}).join("");
+}
+function render(){
+ var h="";
+ MOVIES.forEach(function(x,i){
+  if(genre!=="All"&&x.g!==genre)return;
+  if(qs&&x.t.toLowerCase().indexOf(qs)<0)return;
+  h+='<div class="card" data-i="'+i+'"><div class="po" style="background:'+colors[i%6]+'">'+esc(x.e)+'<b>▶ Play</b></div><div class="in"><h3>'+esc(x.t)+'</h3><small>'+esc(x.g)+' · '+esc(x.y)+'</small></div></div>';
+ });
+ document.getElementById("grid").innerHTML=h||'<div class="empty">Koi movie nahi mili.</div>';
+ chips();
+}
+var dlg=document.getElementById("dlg"),pl=document.getElementById("pl");
+function play(i){
+ var x=MOVIES[i];
+ pl.innerHTML=x.k==="yt"?'<iframe src="https://www.youtube.com/embed/'+esc(ytId(x.u))+'" allow="autoplay; encrypted-media; fullscreen" allowfullscreen></iframe>':'<video controls autoplay playsinline src="'+esc(x.u)+'"></video>';
+ document.getElementById("pt").textContent=x.t;
+ document.getElementById("pm").textContent=x.g+" · "+x.y;
+ document.getElementById("pd").textContent=x.s;
+ dlg.showModal();
+}
+function stop(){pl.innerHTML="";dlg.close()}
+document.getElementById("cl").onclick=stop;
+dlg.addEventListener("close",function(){pl.innerHTML=""});
+document.getElementById("grid").onclick=function(e){var c=e.target.closest(".card");if(c)play(+c.dataset.i)};
+document.getElementById("chips").onclick=function(e){var b=e.target.closest("button");if(b){genre=b.dataset.g;render()}};
+document.getElementById("q").oninput=function(e){qs=e.target.value.toLowerCase().trim();render()};
+function admin(){document.getElementById("adm").style.display=location.hash==="#admin"?"block":"none"}
+window.addEventListener("hashchange",admin);admin();
+document.getElementById("gen").onclick=function(){
+ var v=function(id){return document.getElementById(id).value.trim()};
+ var o={t:v("a1"),g:v("a2")||"General",y:+v("a3")||2026,e:v("a4")||"🎬",s:v("a5"),k:v("a6"),u:v("a7")};
+ document.getElementById("out").value=JSON.stringify(o)+",";
+ MOVIES.push(o);render();
+};
+document.getElementById("cp").onclick=function(){var o=document.getElementById("out");o.select();try{document.execCommand("copy")}catch(x){}};
+render();
+</script>
+</body>
+</html>
